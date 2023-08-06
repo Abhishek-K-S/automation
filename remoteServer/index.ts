@@ -11,10 +11,8 @@ import { createAuth, verify } from './src/verify';
 //     optionsSuccessStatus: 200
 // };
 
-//dest: {socketID, clients}
-let regServers:{[key: string]:{socketID: string, clients: string[]}} = {}
-//clientSocket: dest
-let clientMap: {[key: string]: string} = {}
+//dest: socketID
+let regServers:{[key: string]:string} = {}
   
 
 const httpServer = http.createServer()
@@ -48,6 +46,9 @@ const io = new socketIOServer(httpServer, {cors: {origin: '*'}})
 
 io.on('connection', (socket)=>{
     console.log('user connected, ', socket.id)
+    socket.on(socketEvents.init, (skt: WithAuth)=>{
+        verify(skt.dest, skt.auth) && socket.join(skt.dest);
+    })
 
     ///server user logic
     socket.on(socketEvents.relayMessageToServer, (skt: WithAuth) =>{
@@ -59,12 +60,8 @@ io.on('connection', (socket)=>{
             regServers[skt.dest] &&
             verify(skt.dest, skt.auth)
             ){
-                if(!clientMap[socket.id]){
-                    clientMap[socket.id] = skt.dest;
-                }
                 if(regServers[skt.dest]){
-                    socket.to(regServers[skt.dest].socketID).emit(socketEvents.relayMessageToServer, skt)
-                    if(!regServers[skt.dest].clients.includes(socket.id)) regServers[skt.dest].clients.push(socket.id)
+                    socket.to(regServers[skt.dest]).emit(socketEvents.relayMessageToServer, skt)
                 }
         }
     })
@@ -75,42 +72,29 @@ io.on('connection', (socket)=>{
     socket.on(socketEvents.register, (skt: WithoutAuth)=>{
         console.log('server registered, server id is ', socket.id, skt.dest)
         if(Object.keys(regServers).length <= ServerLimit){
-            regServers[skt.dest] = {socketID: socket.id, clients: []}
+            regServers[skt.dest] = socket.id
+            // socket.join(skt.dest);
         }
     })
 
     socket.on(socketEvents.relayMessageToUser, (skt: WithoutAuth) =>{
-        if(regServers[socket.id]?.clients.length){
-            socket.to(regServers[socket.id].clients).emit(socketEvents.relayMessageToUser, skt)
-        }
+        socket.to(skt.dest).emit(socketEvents.relayMessageToUser, skt)
     })
 
 
 
     socket.on('disconnect', (reason)=>{
-        if(Object.values(regServers).map(ele=> ele.socketID).includes(socket.id)){
+        if(Object.values(regServers).includes(socket.id)){
             for(let a in regServers){
-                if(regServers[a].socketID == socket.id){
+                if(regServers[a]== socket.id){
                     delete regServers[a]
                     break;
                 }
             }
         }
-        else if(clientMap[socket.id]){
-            let serverid = clientMap[socket.id] //gives dest
-            delete clientMap[socket.id];
-            let loc: number|undefined = regServers[serverid]?.clients.indexOf(socket.id)
-            if(loc!= undefined && loc>-1){
-                regServers[serverid].clients.splice(loc, 1)
-            }
-
-        }
     })
 
-
 })
-
-
 
 httpServer.listen(port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
