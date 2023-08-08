@@ -1,0 +1,13 @@
+syntax = 'proto3';
+
+service pumpDataTransfer {
+    rpc streamData (stream requestData) returns (stream responseData);
+}
+
+message requestData {
+    string req = 1;
+}
+
+message responseData {
+    string res = 1;
+}

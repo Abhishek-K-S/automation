@@ -1,23 +1,14 @@
 import dotenv from 'dotenv';
 import { Server as socketIOServer} from 'socket.io';
 import http from 'http'
-import { ServerLimit, socketEvents, WithAuth, WithoutAuth } from './src/shared/constants';
-// import cors, {CorsOptions} from 'cors'
+import { PropsWithAuth, PropsWithoutAuth, ServerLimit, socketEvents, WithAuth, WithoutAuth } from './src/shared/constants';
 import { createAuth, verify } from './src/verify';
-
-// const corsOptions: CorsOptions = {
-//     origin: 'http://localhost:5500/index.html', // Replace this with the allowed origin(s)
-//     credentials: true,
-//     optionsSuccessStatus: 200
-// };
 
 //dest: socketID
 let regServers:{[key: string]:string} = {}
   
 
 const httpServer = http.createServer()
-
-// httpServer.addListener('request', cors(corsOptions))
 httpServer.addListener('request',(req, res)=>{
     
     let splitArr = req.url?.split('/')
@@ -35,7 +26,6 @@ httpServer.addListener('request',(req, res)=>{
     res.end();
 })
 
-// httpServer.on('request', cors(corsOptions));
 dotenv.config();
 
 const port = process.env.PORT;
@@ -47,22 +37,21 @@ const io = new socketIOServer(httpServer, {cors: {origin: '*'}})
 io.on('connection', (socket)=>{
     console.log('user connected, ', socket.id)
     socket.on(socketEvents.init, (skt: WithAuth)=>{
-        verify(skt.dest, skt.auth) && socket.join(skt.dest);
+        if(includesProps(skt, PropsWithAuth) && verify(skt.dest, skt.auth))
+            socket.join(skt.dest);
     })
 
     ///server user logic
     socket.on(socketEvents.relayMessageToServer, (skt: WithAuth) =>{
+        console.log(skt.dest, regServers[skt.dest])
 
         //check for auth
         if(
-            skt.auth && 
-            skt.dest && 
+            includesProps(skt, PropsWithAuth) && 
             regServers[skt.dest] &&
             verify(skt.dest, skt.auth)
             ){
-                if(regServers[skt.dest]){
-                    socket.to(regServers[skt.dest]).emit(socketEvents.relayMessageToServer, skt)
-                }
+                socket.to(regServers[skt.dest]).emit(socketEvents.relayMessageToServer, skt)
         }
     })
     
@@ -70,15 +59,15 @@ io.on('connection', (socket)=>{
     
     ///server outbound logic
     socket.on(socketEvents.register, (skt: WithoutAuth)=>{
-        console.log('server registered, server id is ', socket.id, skt.dest)
-        if(Object.keys(regServers).length <= ServerLimit){
+        if(skt.dest && Object.keys(regServers).length <= ServerLimit){
             regServers[skt.dest] = socket.id
             // socket.join(skt.dest);
         }
     })
 
     socket.on(socketEvents.relayMessageToUser, (skt: WithoutAuth) =>{
-        socket.to(skt.dest).emit(socketEvents.relayMessageToUser, skt)
+        if(includesProps(skt, PropsWithoutAuth) )
+            socket.to(skt.dest).emit(socketEvents.relayMessageToUser, skt)
     })
 
 
@@ -99,3 +88,11 @@ io.on('connection', (socket)=>{
 httpServer.listen(port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
 });
+
+function includesProps(obj: any, props: string[]): boolean{
+    if(obj === undefined || obj === null) return false;
+    for(let a in props){
+        if(obj[a] === undefined) return false;
+    }
+    return true;
+}
