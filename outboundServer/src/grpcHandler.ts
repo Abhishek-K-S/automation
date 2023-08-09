@@ -1,6 +1,6 @@
 import grpc from '@grpc/grpc-js'
 import { EventEmitter } from 'stream'
-import { WithAuth, WithoutAuth } from './shared/constants'
+import { MicroServices, WithAuth, WithoutAuth } from './shared/constants'
 import { requestData, responseData } from './shared/gRPC/pumpDataTransfer_pb'
 import { socketEvents } from './shared/constants'
 
@@ -13,6 +13,8 @@ export const setListener = (fn: listenerType)=> clientListener = fn
 
 export const requestHandler = (data: requestData) =>{
     let content = JSON.parse(data.getReq()) as WithoutAuth
+    //add fields to the content to such as 
+    content.type = MicroServices.PUMP
     grpcRequestListener.emit( socketEvents.relayMessageToUser, content)
 }
 

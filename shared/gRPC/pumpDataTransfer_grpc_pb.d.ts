@@ -4,7 +4,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import * as grpc from "grpc";
+import * as grpc from "@grpc/grpc-js";
 import * as pumpDataTransfer_pb from "./pumpDataTransfer_pb";
 
 interface IpumpDataTransferService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
@@ -23,7 +23,7 @@ interface IpumpDataTransferService_IstreamData extends grpc.MethodDefinition<pum
 
 export const pumpDataTransferService: IpumpDataTransferService;
 
-export interface IpumpDataTransferServer {
+export interface IpumpDataTransferServer extends grpc.UntypedServiceImplementation {
     streamData: grpc.handleBidiStreamingCall<pumpDataTransfer_pb.requestData, pumpDataTransfer_pb.responseData>;
 }
 
@@ -34,7 +34,7 @@ export interface IpumpDataTransferClient {
 }
 
 export class pumpDataTransferClient extends grpc.Client implements IpumpDataTransferClient {
-    constructor(address: string, credentials: grpc.ChannelCredentials, options?: object);
+    constructor(address: string, credentials: grpc.ChannelCredentials, options?: Partial<grpc.ClientOptions>);
     public streamData(options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<pumpDataTransfer_pb.requestData, pumpDataTransfer_pb.responseData>;
     public streamData(metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<pumpDataTransfer_pb.requestData, pumpDataTransfer_pb.responseData>;
 }
