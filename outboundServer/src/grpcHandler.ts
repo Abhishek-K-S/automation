@@ -7,20 +7,21 @@ import { socketEvents } from './shared/constants'
 type listenerType = (response: responseData)=>void
 
 let clientListener: listenerType | null  = null
+export const setPumpMicroServiceListener = (fn: listenerType)=> clientListener = fn
+
+
 export const grpcRequestListener = new EventEmitter();
 
-export const setListener = (fn: listenerType)=> clientListener = fn
-
-export const requestHandler = (data: requestData) =>{
-    let content = JSON.parse(data.getReq()) as WithoutAuth
-    //add fields to the content to such as 
-    content.type = MicroServices.PUMP
-    grpcRequestListener.emit( socketEvents.relayMessageToUser, content)
+export const grpcRequestHandler = (grpcRequest: requestData) =>{
+    let dataFromGrpcClient = JSON.parse(grpcRequest.getReq()) as WithoutAuth
+    //add fields to the dataFromGrpcClient to such as 
+    dataFromGrpcClient.type = MicroServices.PUMP
+    grpcRequestListener.emit( socketEvents.relayMessageToUser, dataFromGrpcClient)
 }
 
 
-export const sendResponse = (content: WithAuth) =>{
+export const sendResponseToPumpMicroService = (dataForPumpService: WithAuth) =>{
     let responseDataCopy = new responseData()
-    responseDataCopy.setRes(JSON.stringify(content))
+    responseDataCopy.setRes(JSON.stringify(dataForPumpService))
     if(clientListener) clientListener(responseDataCopy)
 }

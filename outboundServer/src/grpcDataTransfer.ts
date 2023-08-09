@@ -1,13 +1,13 @@
 import { IpumpDataTransferServer } from './shared/gRPC/pumpDataTransfer_grpc_pb'
 import { requestData, responseData } from './shared/gRPC/pumpDataTransfer_pb'
 import grpc from '@grpc/grpc-js'
-import {requestHandler, setListener} from './grpcHandler'
+import { grpcRequestHandler, setPumpMicroServiceListener } from './grpcHandler'
 
-export const grpcDataTransfer: IpumpDataTransferServer ={
+export const grpcDataTransferHandlers: IpumpDataTransferServer ={
     streamData: (call: grpc.ServerDuplexStream<requestData, responseData>)=>{
-        setListener((req: responseData)=>{call.write(req)})
+        setPumpMicroServiceListener((req: responseData)=>{call.write(req)})
         call.on('data', (request:requestData) => {
-            requestHandler(request)
+            grpcRequestHandler(request)
         });
     
         call.on('end', () => {

@@ -4,8 +4,8 @@ import {io} from 'socket.io-client'
 import { MicroServices, socketEvents, WithAuth } from './src/shared/constants';
 import { verifyUser } from './src/verify';
 import { pumpDataTransferService } from './src/shared/gRPC/pumpDataTransfer_grpc_pb'
-import { grpcRequestListener, sendResponse } from './src/grpcHandler';
-import { grpcDataTransfer } from './src/grpcDataTransfer';
+import { grpcRequestListener, sendResponseToPumpMicroService } from './src/grpcHandler';
+import { grpcDataTransferHandlers } from './src/grpcDataTransfer';
 
 dotenv.config();
 
@@ -16,7 +16,7 @@ const myPassword = process.env.MY_PASSWORD || ''
 
 
 const grpcServer = new grpc.Server()
-grpcServer.addService(pumpDataTransferService, grpcDataTransfer)
+grpcServer.addService(pumpDataTransferService, grpcDataTransferHandlers)
 
 const socket = io(serverURL)
 socket.on('connect', ()=>{
@@ -27,8 +27,8 @@ socket.on(socketEvents.relayMessageToServer, (skt: WithAuth) =>{
     if(!verifyUser(skt.auth, myId, myPassword)) return;
     switch(skt.type){
         case MicroServices.PUMP: 
-            //grpc to connect to the other micro srvice
-            sendResponse(skt)
+            //grpc to connect to the other micro service, pump in this case
+            sendResponseToPumpMicroService(skt)
         break;
     }
 })
@@ -40,11 +40,10 @@ function replyToUser(msg: any): void{
 }
 
 
-//loop forever to listen to all of teh events
-
+//grcp server listening
 grpcServer.bindAsync(`127.0.0.1:${port}`, grpc.ServerCredentials.createInsecure(), (err, reservedPort)=>{
     if(err){
-        console.log('could not start the server with error', err);
+        console.log('could not start the server due to ', err);
         return;
     }
     console.log('listening on port ', reservedPort);
