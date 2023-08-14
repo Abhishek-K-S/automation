@@ -1,0 +1,8 @@
+setup mosquito server with 
+
+sudo yay -S mosquitto mosquitto-clients
+
+default port is 1883
+
+sudo systemctl enable mosquitto
+

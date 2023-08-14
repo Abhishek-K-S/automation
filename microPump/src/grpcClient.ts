@@ -4,6 +4,8 @@ import { WithAuth, WithoutAuth } from './shared/constants';
 import { IpumpDataTransferClient, pumpDataTransferClient } from './shared/gRPC/pumpDataTransfer_grpc_pb'
 import { requestData, responseData } from './shared/gRPC/pumpDataTransfer_pb';
 import { createStructuredDataToSend } from './utils/dataFormatting';
+import { verifyUser } from './utils/verify';
+import mqttserve from './mqtt/mqttServer';
 
 const grpcServerPort = process.env.GRPC_SERVER_PORT || '6999'
 
@@ -17,9 +19,9 @@ class grpcClientLogic {
         this.grpcCall.on('data', (chunk:responseData)=>{
             //logic to handle
             let receivedData = JSON.parse(chunk.getRes()) as WithAuth
-            //verify user
+            //verify user in the mqtt logic as the iot registration details  are stored in that file
             //handle request based on action send by the user;
-
+            mqttserve.userMessageHandler(receivedData)
         })
 
         this.grpcCall.on('end', ()=>{

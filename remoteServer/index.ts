@@ -1,8 +1,10 @@
 import dotenv from 'dotenv';
-import { Server as socketIOServer} from 'socket.io';
+import { Server as socketIOServer, } from 'socket.io';
+import {Event as socketEvent} from 'socket.io/dist/socket'
 import http from 'http'
 import { PropsWithAuth, PropsWithoutAuth, ServerLimit, socketEvents, WithAuth, WithoutAuth } from './src/shared/constants';
 import { createAuth, verify } from './src/verify';
+import { socketReqestLimiter } from './src/middleware/socketRequestLimit';
 
 //dest: socketID
 let regServers:{[key: string]:string} = {}
@@ -14,10 +16,9 @@ httpServer.addListener('request',(req, res)=>{
     let splitArr = req.url?.split('/')
     let index = splitArr?.indexOf('refreshToken');
     let text = splitArr && index && index > -1 && splitArr[index+1]
-    let support = splitArr && index && index > -1 && splitArr[index+2]
     if(text){
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.write(JSON.stringify({data: createAuth(text, support?support: text)}))
+        res.write(JSON.stringify({data: createAuth(text)}))
     }
     else{
         res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -31,10 +32,12 @@ dotenv.config();
 const port = process.env.PORT;
 
 
-///Scoket connectinos only
+///Socket connectinos only
 const io = new socketIOServer(httpServer, {cors: {origin: '*'}})
 
 io.on('connection', (socket)=>{
+    socket.use(socketReqestLimiter(5000))
+    
     console.log('user connected, ', socket.id)
     socket.on(socketEvents.init, (skt: WithAuth)=>{
         if(includesProps(skt, PropsWithAuth) && verify(skt.dest, skt.auth))

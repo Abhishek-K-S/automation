@@ -2,7 +2,7 @@ import *  as grpc from '@grpc/grpc-js';
 import dotenv from 'dotenv';
 import {io} from 'socket.io-client'
 import { MicroServices, socketEvents, WithAuth } from './src/shared/constants';
-import { verifyUser } from './src/verify';
+// import { verifyUser } from './src/verify';
 import { pumpDataTransferService } from './src/shared/gRPC/pumpDataTransfer_grpc_pb'
 import { grpcRequestListener, sendResponseToPumpMicroService } from './src/grpcHandler';
 import { grpcDataTransferHandlers } from './src/grpcDataTransfer';
@@ -24,7 +24,7 @@ socket.on('connect', ()=>{
 })
 
 socket.on(socketEvents.relayMessageToServer, (skt: WithAuth) =>{
-    if(!verifyUser(skt.auth, myId, myPassword)) return;
+    // if(!verifyUser(skt.auth, skt.dest, myPassword)) return;
     switch(skt.type){
         case MicroServices.PUMP: 
             //grpc to connect to the other micro service, pump in this case

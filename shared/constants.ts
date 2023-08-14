@@ -12,8 +12,8 @@ export const MicroServices = {
 }
 
 //action: event type,         type: type of micro srver
-export type WithoutAuth<T=any> = {dest: string, action: number, type: number, data:T}
-export type WithAuth<T=any> = {auth: string} & WithoutAuth<T>
+export type WithoutAuth<T=any> = {dest: string, action: string, type?: number, data:T}
+export type WithAuth<T=any> = {auth: string, support: string} & WithoutAuth<T>
 
 export const PropsWithoutAuth:string[] = [
     'dest',

@@ -22,6 +22,7 @@ export const grpcRequestHandler = (grpcRequest: requestData) =>{
 
 export const sendResponseToPumpMicroService = (dataForPumpService: WithAuth) =>{
     let responseDataCopy = new responseData()
+    delete dataForPumpService['type']
     responseDataCopy.setRes(JSON.stringify(dataForPumpService))
     if(clientListener) clientListener(responseDataCopy)
 }
