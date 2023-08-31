@@ -46,6 +46,7 @@ class mqttServer {
     }
 
     private mqttMessageHandler(topic:string, payload: Buffer|string){
+        console.log('message reveived at the server')
         if(topic == commActions.registerDevice){
             const deviceId = String(payload);
             this.devices.add(deviceId)

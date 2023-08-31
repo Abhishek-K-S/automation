@@ -1,5 +1,5 @@
 //action and data to be sent by iot
-export type CommData<T> = {action: string, data: T, dest: string}
+export type CommData<T> = {action: string, data: T, dest: string, register?: boolean}
 
 export const commActions = {
     registerDevice: "REG_NEW",

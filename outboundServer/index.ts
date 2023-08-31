@@ -1,43 +1,39 @@
 import *  as grpc from '@grpc/grpc-js';
 import dotenv from 'dotenv';
 import {io} from 'socket.io-client'
-import { MicroServices, socketEvents, WithAuth } from './src/shared/constants';
-// import { verifyUser } from './src/verify';
+import { socketEvents } from './src/shared/constants';
 import { pumpDataTransferService } from './src/shared/gRPC/pumpDataTransfer_grpc_pb'
-import { grpcRequestListener, sendResponseToPumpMicroService } from './src/grpcHandler';
 import { grpcDataTransferHandlers } from './src/grpcDataTransfer';
+import { localSocketIOEmitter, socketRequestHandler } from './src/socketRequestHandler';
 
 dotenv.config();
 
 const port = process.env.PORT || '6999'
 const serverURL = process.env.SERVER_URL || ''
-const myId = process.env.MY_ID || ''
-const myPassword = process.env.MY_PASSWORD || ''  
+const domainName = process.env.DOMAIN || 'QU'
 
-
-const grpcServer = new grpc.Server()
-grpcServer.addService(pumpDataTransferService, grpcDataTransferHandlers)
-
+//socket logic
 const socket = io(serverURL)
+
 socket.on('connect', ()=>{
-    console.log('server connected to '+ serverURL)
+    console.log('connected to the server');
+    socket.emit(socketEvents.register, {domain: domainName})
 })
 
-socket.on(socketEvents.relayMessageToServer, (skt: WithAuth) =>{
-    // if(!verifyUser(skt.auth, skt.dest, myPassword)) return;
-    switch(skt.type){
-        case MicroServices.PUMP: 
-            //grpc to connect to the other micro service, pump in this case
-            sendResponseToPumpMicroService(skt)
-        break;
-    }
-})
-
-grpcRequestListener.on(socketEvents.relayMessageToUser, replyToUser)
+socket.on(socketEvents.relayMessageToServer, socketRequestHandler)
+socket.on(socketEvents.registerSuccess, (status)=>console.log('register status success: ', status))
 
 function replyToUser(msg: any): void{
     socket.emit(socketEvents.relayMessageToUser, msg )
 }
+
+
+//grpc logic
+const grpcServer = new grpc.Server()
+grpcServer.addService(pumpDataTransferService, grpcDataTransferHandlers)
+
+localSocketIOEmitter.on(socketEvents.relayMessageToUser, replyToUser)
+
 
 
 //grcp server listening

@@ -1,9 +1,28 @@
 export const socketEvents = {
-    init: 'SOCKET_INIT',
-
     relayMessageToServer: 'RELAY_TO_SERVER',
-    relayMessageToUser: 'RELAY_TO_USER',
-    register: "REG_SRV"
+    relayMessageToUser: 'RELAY_TO_USER', 
+
+    register: "REG_NEW",
+    registerSuccess: 'REG_SCS', 
+}
+
+export const socketEndpoints = {
+    init: 'INIT_NEW',
+    initSuccesss: 'INIT_SCS',
+    
+    erorr: "ERR",
+
+    addNewUser: "AUSER",
+
+    getInfo: "GET_INFO",
+    info: 'INFO',
+
+    startImmediate: "STR_IMM",
+    stopImmediate: "STP_IMM"
+}
+
+export const errorTypes = {
+    authfail: 'NO_AUTH'
 }
 
 export const ServerLimit = 5
@@ -12,8 +31,19 @@ export const MicroServices = {
 }
 
 //action: event type,         type: type of micro srver
-export type WithoutAuth<T=any> = {dest: string, action: string, type?: number, data:T}
-export type WithAuth<T=any> = {auth: string, support: string} & WithoutAuth<T>
+export type RemoteData = {domain?: string, senderId?: string}
+
+export type WithoutAuth<T=any> = {
+    device?: string, 
+    domain?: string, 
+    senderId?: string, 
+    endPoint: string, 
+    service?: number, 
+    payload: T 
+}
+export type WithAuth<T=any> = {auth: string | {username: string, secret: string}} & WithoutAuth<T>
+
+export type WithError = {type: string, message: string, senderId: string};
 
 export const PropsWithoutAuth:string[] = [
     'dest',

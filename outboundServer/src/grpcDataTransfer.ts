@@ -8,6 +8,7 @@ export const grpcDataTransferHandlers: IpumpDataTransferServer ={
         setPumpMicroServiceListener((req: responseData)=>{call.write(req)})
         call.on('data', (request:requestData) => {
             grpcRequestHandler(request)
+            //register the device, listen for that event that contain request property
         });
     
         call.on('end', () => {

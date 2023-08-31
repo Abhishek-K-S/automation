@@ -14,10 +14,22 @@ class grpcClientLogic {
     constructor(){
         const grpcClient = new pumpDataTransferClient(`127.0.0.1:${grpcServerPort}`, grpc.credentials.createInsecure());
 
+        // grpcClient.waitForReady(Infinity, (errr)=>{
+        //     if(!errr){
+        //         console.log('connecetion established');
+        //         setTimeout(()=>{
+        //             this.sendResponseToServer({register: true, dest: })
+                // })
+        //     }
+        // })
+
         this.grpcCall = grpcClient.streamData()
+
+
 
         this.grpcCall.on('data', (chunk:responseData)=>{
             //logic to handle
+            console.log('grpc data received')
             let receivedData = JSON.parse(chunk.getRes()) as WithAuth
             //verify user in the mqtt logic as the iot registration details  are stored in that file
             //handle request based on action send by the user;
