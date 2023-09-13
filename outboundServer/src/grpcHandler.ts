@@ -19,6 +19,7 @@ export const sendResponseToPumpMicroService = (dataForPumpService: WithAuth) =>{
     let dataToSend : any = dataForPumpService
     delete dataToSend['service']
     delete dataToSend['auth']
+    delete dataToSend['domain']
     responseDataCopy.setRes(JSON.stringify(dataToSend))
     if(clientListener) clientListener(responseDataCopy)
 }

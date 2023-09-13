@@ -29,17 +29,15 @@ class grpcClientLogic {
 
         this.grpcCall.on('data', (chunk:responseData)=>{
             //logic to handle
-            console.log('grpc data received')
-            let receivedData = JSON.parse(chunk.getRes()) as WithAuth
-            //verify user in the mqtt logic as the iot registration details  are stored in that file
-            //handle request based on action send by the user;
+            console.log('grpc data received', chunk)
+            let receivedData = JSON.parse(chunk.getRes()) as WithoutAuth
             mqttserve.userMessageHandler(receivedData)
         })
 
         this.grpcCall.on('end', ()=>{
             console.log('server stopped, ending the call')
-
             this.grpcCall.end();
+            //try reconnecting to the server
         })
     }
 

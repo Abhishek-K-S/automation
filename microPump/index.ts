@@ -1,6 +1,9 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import connect from './src/database/connect';
+
+connect();
 
 import grpcClient from './src/grpcClient';
 import mqttserve from './src/mqtt/mqttServer';

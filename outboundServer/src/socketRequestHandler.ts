@@ -2,6 +2,7 @@ import { EventEmitter } from "stream";
 import { sendResponseToPumpMicroService } from "./grpcHandler";
 import { generateToken, verifyToken } from "./jwt";
 import { errorTypes, MicroServices, socketEndpoints, socketEvents, WithAuth, WithoutAuth } from "./shared/constants";
+import DB from './db/auth'
 
 const domainName = process.env.DOMAIN || 'QU'
 
@@ -13,12 +14,9 @@ export const socketRequestHandler = (message: WithAuth) =>{
             try{
                 if(typeof message.auth === 'string' || !message.auth.secret || !message.auth.username) throw Error()
                 // check if user is auth, if so
-                let isAuth = true;
-                if(isAuth){
-                    let authForUser = generateToken(message.auth.username);
-                    localEmitter(socketEndpoints.initSuccesss, authForUser, undefined, message.senderId )
-                }
-                else throw new Error();
+                DB.isAuth(message.auth.username, message.auth.secret)
+                let authForUser = generateToken(message.auth.username);
+                localEmitter(socketEndpoints.initSuccesss, authForUser, undefined, message.senderId )
 
             }
             catch(err){
@@ -48,7 +46,7 @@ export const localEmitter = (endPoint: string, payload: any, service?: number, t
     }
     if(service !== undefined || service !== null) dataToSend['service'] = service
     if(to?.length) dataToSend['senderId'] = to; else dataToSend['domain'] = domainName;
-    localSocketIOEmitter.emit(socketEvents.relayMessageToUser, dataToSend)
+    localSocketIOEmitter.emit(socketEvents.relayMessageToUser, dataToSend);
 }
 
 export const localErrorEmitter = (type: string, message: string, senderId?: string) => {

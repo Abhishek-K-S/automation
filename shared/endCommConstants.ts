@@ -1,5 +1,5 @@
 //action and data to be sent by iot
-export type CommData<T> = {action: string, data: T, dest: string, register?: boolean}
+export type CommData<T> = {endPoint: string, payload: T, device?: string, senderId?: string}
 
 export const commActions = {
     registerDevice: "REG_NEW",
@@ -10,8 +10,8 @@ export const commActions = {
     startImmediate: 'IMMST',
     stopImmediate: 'IMMSP',
 
-    getLogs: 'LOGS',
-    receiveLogs: 'LOGS_LIST',
+    ping: 'P', 
+    pong: 'PG',
 
     errorAction: "ERR"
 
@@ -24,7 +24,7 @@ export type updatedStatus = {
     phase: number,
     voltage: [number, number, number],
     manual?:boolean,
-    lastUpdate: Date,
+    time: number,
     _id?: string
 }
 
