@@ -1,0 +1,22 @@
+getLogs    -----
+
+    payload:  offset
+
+error   -------
+
+    payload: device, message
+
+
+
+let the outbound server send user name to the micro service, for logging
+
+grpc server should listen to the grpc event for error events at endpoints, appropriate form should be sent
+
+
+
+
+iot:;;;;;
+
+expect 
+    support:
+    _id: 

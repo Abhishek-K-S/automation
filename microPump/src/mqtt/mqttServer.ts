@@ -3,6 +3,7 @@ import grpcClient from '../grpcClient';
 import { WithoutAuth, socketEndpoints } from '../shared/constants';
 import { commActions, updatedStatus, errorAction } from '../shared/endCommConstants'
 import {v4 as uuidv4} from 'uuid'
+import { Logger, getLogs, updateLog } from '../database/Logger';
 
 const mqttBrokerUrl = process.env.MQTT_BROKER || ''
 
@@ -40,25 +41,36 @@ class mqttServer {
                 case socketEndpoints.getLogs: 
                     //query db for the log, send only 20 recent records
                     if(!userRequest.senderId) throw Error('no sender id');
-                    grpcClient.sendResponseToServer({senderId: userRequest.senderId||"", payload: [], endPoint: socketEndpoints.receiveLogs})
+                    let multiplier = 1;
+                    if(Number(userRequest.payload.offset)>0) multiplier = Number(userRequest.payload.offset)
+                    getLogs(multiplier).then(val=>{
+                        grpcClient.sendResponseToServer({senderId: userRequest.senderId||"", payload: val, endPoint: socketEndpoints.receiveLogs})
+                    })
                 break;
                 default: 
+                    await this.isDeviceOnline(userRequest.device).catch(err=>{
+                        //device is offline
+                        Logger(userRequest.endPoint, userRequest.senderId||'').then(entry=>{
+                            if(entry){
+                                updateLog(String(entry)||'', true , `device ${userRequest.device} is offline`)
+                            }
+                            grpcClient.sendResponseToServer({payload: {device: userRequest.device, message: 'Device is offline'}, endPoint: socketEndpoints.erorr})
+                            throw Error('Device is offline, aborting...')
+                        })
 
-                //these messages needs to be sent to the end devices. veriy if they r alive
-                    //isalive, if so
-                    await this.isDeviceOnline(userRequest.device)
+                    })
+                    let action = ""
                     switch(userRequest.endPoint){
                         case socketEndpoints.getInfo: 
                             this.sendMessageToDevice(userRequest.device, commActions.getStatus); 
                         break;
         
                         case socketEndpoints.startImmediate:
+                            if(!action) action = 'START'
                         case socketEndpoints.stopImmediate:
-                            //log for start, wait for to get updated, for the sake of record
-                            // replace record id with database entry id
-                            let recordId = uuidv4()
-                            //make db entry, partially updated entry, wait for 5 seconds
-                            this.sendMessageToDevice(userRequest.device, commActions.startImmediate, JSON.stringify({support: userRequest.deviceSecurity, recordId}))
+                            if(!action) action = 'STOP'
+                            let logId = await Logger(userRequest.endPoint, userRequest.senderId||'', `user ${userRequest.senderId} requested to ${action}`)
+                            this.sendMessageToDevice(userRequest.device, commActions.startImmediate, JSON.stringify({support: userRequest.deviceSecurity, _id: String(logId)}))
                         break;
                         default: throw Error('unknown operation');
                     }
@@ -106,7 +118,7 @@ class mqttServer {
         }
         else
             try{
-                const message = JSON.parse(String(payload)) as errorAction|updatedStatus;
+                const message = JSON.parse(String(payload)) as  errorAction|updatedStatus;
                 const fragments = topic.split('/');
                 const messageType = fragments[2];
                 const deviceId = fragments[1];
@@ -122,10 +134,17 @@ class mqttServer {
                         break;
 
                         case commActions.updatedStatus: 
+                            if(message._id){
+                                updateLog(JSON.parse(JSON.stringify(message._id)), false);
+                                delete message._id
+                            }
                             grpcClient.sendResponseToServer({device: deviceId, endPoint: socketEndpoints.info, payload: message})
                         break;
                         case commActions.errorAction: 
                                 //log the event to the database based on the id
+                            if(message._id)
+                                updateLog(message._id, true)
+                            else Logger(message.request, "", (message as errorAction).reason)
                             grpcClient.sendResponseToServer({device: deviceId, endPoint: socketEndpoints.erorr, payload: message, senderId: message._id})
             
                         break;

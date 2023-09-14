@@ -25,7 +25,8 @@ export type updatedStatus = {
     voltage: [number, number, number],
     manual?:boolean,
     time: number,
-    _id?: string
+    _id: string,
+    request: string,
 }
 
 export type startImmediate = null
@@ -34,4 +35,4 @@ export type stopImmediate = null
 export type getLogs = null
 export type receiveLogs = {action: string, success: boolean, _createdTime: Date, _id: string}[]
 
-export type errorAction = {message: string, reason: string, _id?: string}
+export type errorAction = {message: string, reason: string, _id?: string, request: string}

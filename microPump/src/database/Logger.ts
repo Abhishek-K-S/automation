@@ -3,14 +3,15 @@ import logger from "../model/Logger"
 const logsToFetch = 20;
 
 export const Logger = async (action: string, refId: string, message?: string) => {
-    let entry = {action, requestId: refId} as any
+    let entry = {action, requestId: refId, isError: true} as any
     if(message) entry.outcome =  message
     let newEntry = await logger.create(entry).catch(err=>console.log('Database entry erorr', JSON.stringify(err)))
     return newEntry?._id;
 }
 
-export const updateLog = (_id: string, message: string, isError: boolean) =>{
-    let toUpdate = {outcome: message, isError}
+export const updateLog = (_id: string, isError: boolean, message?: string|undefined) =>{
+    let toUpdate = {isError} as any
+    if(message) toUpdate.outcome = message;
     logger.updateOne({_id}, toUpdate).catch(err=>console.log('Database update error', JSON.stringify(err)))
 }
 

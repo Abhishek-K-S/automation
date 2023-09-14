@@ -25,6 +25,7 @@ class grpcClientLogic {
 
         this.grpcCall = grpcClient.streamData()
 
+        this.grpcCall.on('metadata', (arg1)=>console.log('some metadata stuff', arg1))
 
 
         this.grpcCall.on('data', (chunk:responseData)=>{

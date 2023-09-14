@@ -1,4 +1,6 @@
 import dotenv from 'dotenv';
+dotenv.config();
+
 import { Server as socketIOServer, } from 'socket.io';
 import http from 'http'
 import { RemoteData, ServerLimit, socketEvents} from './src/shared/constants';
@@ -15,11 +17,10 @@ httpServer.addListener('request',(req, res)=>{
     res.end();
 })
 
-dotenv.config();
 
 const port = process.env.PORT;
 
-///Socket connectinos only
+///Socket connections only
 const io = new socketIOServer(httpServer, {cors: {origin: '*'}})
 
 io.on('connection', (socket)=>{
@@ -53,6 +54,7 @@ io.on('connection', (socket)=>{
 
     socket.on('disconnect', (reason)=>{
         db.removeParticipant(socket.id);
+        console.log('user disconnected, ', socket.id)
     })
 
 })

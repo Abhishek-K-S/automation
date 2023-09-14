@@ -1,16 +1,21 @@
-import *  as grpc from '@grpc/grpc-js';
 import dotenv from 'dotenv';
+dotenv.config();
+
+
+import *  as grpc from '@grpc/grpc-js';
 import {io} from 'socket.io-client'
 import { socketEvents } from './src/shared/constants';
 import { pumpDataTransferService } from './src/shared/gRPC/pumpDataTransfer_grpc_pb'
 import { grpcDataTransferHandlers } from './src/grpcDataTransfer';
 import { localSocketIOEmitter, socketRequestHandler } from './src/socketRequestHandler';
 
-dotenv.config();
+
 
 const port = process.env.PORT || '6999'
 const serverURL = process.env.SERVER_URL || ''
 const domainName = process.env.DOMAIN || 'QU'
+
+console.log('domain name is ', domainName)
 
 //socket logic
 const socket = io(serverURL)
