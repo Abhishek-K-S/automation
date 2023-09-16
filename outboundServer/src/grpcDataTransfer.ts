@@ -5,7 +5,8 @@ import { grpcRequestHandler, setPumpMicroServiceListener } from './grpcHandler'
 
 export const grpcDataTransferHandlers: IpumpDataTransferServer ={
     streamData: (call: grpc.ServerDuplexStream<requestData, responseData>)=>{
-        setPumpMicroServiceListener((req: responseData)=>{call.write(req)})
+        console.log('LOGGER: Stream data is being called')
+        setPumpMicroServiceListener((req: responseData)=>{call.write(req, ()=>console.log("LOGGER: written to the stream"))});
         call.on('data', (request:requestData) => {
             grpcRequestHandler(request)
             //register the device, listen for that event that contain request property

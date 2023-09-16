@@ -23,3 +23,8 @@ export const sendResponseToPumpMicroService = (dataForPumpService: WithAuth) =>{
     responseDataCopy.setRes(JSON.stringify(dataToSend))
     if(clientListener) clientListener(responseDataCopy)
 }
+
+setInterval(()=>{
+    console.log('LOGGER: clientListerner exists?: ', clientListener !== null);
+    if(clientListener) clientListener(new responseData().setRes('sending from parent'))
+}, 3000)

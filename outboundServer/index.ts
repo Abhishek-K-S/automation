@@ -49,5 +49,6 @@ grpcServer.bindAsync(`127.0.0.1:${port}`, grpc.ServerCredentials.createInsecure(
     }
     console.log('listening on port ', reservedPort);
     grpcServer.start();
+    grpcServer.register
 })
 

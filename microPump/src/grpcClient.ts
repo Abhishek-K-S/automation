@@ -12,33 +12,34 @@ const grpcServerPort = process.env.GRPC_SERVER_PORT || '6999'
 class grpcClientLogic {
     private grpcCall: grpc.ClientDuplexStream<requestData, responseData>
     constructor(){
+        console.log('object created , waiting for grpcClient to initialize')
         const grpcClient = new pumpDataTransferClient(`127.0.0.1:${grpcServerPort}`, grpc.credentials.createInsecure());
-
-        // grpcClient.waitForReady(Infinity, (errr)=>{
-        //     if(!errr){
-        //         console.log('connecetion established');
-        //         setTimeout(()=>{
-        //             this.sendResponseToServer({register: true, dest: })
-                // })
-        //     }
-        // })
 
         this.grpcCall = grpcClient.streamData()
 
-        this.grpcCall.on('metadata', (arg1)=>console.log('some metadata stuff', arg1))
 
-
-        this.grpcCall.on('data', (chunk:responseData)=>{
+        this.grpcCall.on('data', (chunk)=>{
             //logic to handle
             console.log('grpc data received', chunk)
-            let receivedData = JSON.parse(chunk.getRes()) as WithoutAuth
-            mqttserve.userMessageHandler(receivedData)
+            if(chunk.array){
+                try{
+                    let receivedData = JSON.parse(chunk.array.join('')) as WithoutAuth
+                    mqttserve.userMessageHandler(receivedData)
+                }
+                catch(err){
+                    console.log('Data sent from outbound server is not proper')
+                }
+            }
         })
 
         this.grpcCall.on('end', ()=>{
             console.log('server stopped, ending the call')
             this.grpcCall.end();
             //try reconnecting to the server
+        })
+
+        this.grpcCall.on('error', ()=>{
+
         })
     }
 
