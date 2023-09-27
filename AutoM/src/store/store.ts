@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import DomainSlice from "./domainReducer";
 
 const reducers = {
-    domain: DomainSlice.reducer
+    domain: DomainSlice.reducer,
 }
 
 const Store = configureStore({

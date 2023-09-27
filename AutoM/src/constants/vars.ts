@@ -1,3 +1,6 @@
 export const storage = {
-    domainName: 'DOMAIN'
+    domainName: 'DOMAIN',
+    auth: 'AUTH',
+
+    remoteServerURL: 'URL',
 }

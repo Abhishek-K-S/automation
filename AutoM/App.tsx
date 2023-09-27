@@ -5,8 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Provider, useDispatch } from 'react-redux';
 import Store from './src/store/store';
 import React from 'react';
-import { getSavedDomain } from './src/storage/storage';
-import { changeDomain } from './src/store/domainReducer';
+import { client } from './src/utils/socket';
 
 export default function App() {
   return (

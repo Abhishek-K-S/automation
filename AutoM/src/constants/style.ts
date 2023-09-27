@@ -30,5 +30,11 @@ export const PredefinedStyles = StyleSheet.create({
     },
     lightText: {
         color: Colors.light
+    },
+
+    view: {
+        paddingTop: 10,
+        marginBottom: 10,
+        gap: 8
     }
 })

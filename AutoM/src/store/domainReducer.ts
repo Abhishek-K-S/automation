@@ -1,19 +1,23 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { PayloadAction, createSlice } from "@reduxjs/toolkit"
 
-const initialState: {domainName: string | null} = {
-    domainName: null
+const initialState: {domainName: string | null, auth: string|null} = {
+    domainName: null,
+    auth: null,
 }
 
 const DomainSlice = createSlice({
     name: 'Domain',
     initialState,
     reducers: {
-        changeDomain: (state, action)=>{
-            if(typeof action.payload == 'string' && action.payload.length > 0){
-                state.domainName = action.payload;
+        changeDomain: (state, action:PayloadAction<{domainName: string, auth: string}>)=>{
+            console.log('auth strings are, ', action.payload)
+            if(action.payload.domainName && action.payload.auth){
+                state.domainName = action.payload.domainName;
+                state.auth = action.payload.auth;
             }
             else{
                 state.domainName = null
+                state.auth = null
             }
         }
     }
