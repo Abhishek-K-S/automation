@@ -29,6 +29,7 @@ socket.on(socketEvents.relayMessageToServer, socketRequestHandler)
 socket.on(socketEvents.registerSuccess, (status)=>console.log('register status success: ', status))
 
 function replyToUser(msg: any): void{
+    console.log('message to send ', msg)
     socket.emit(socketEvents.relayMessageToUser, msg )
 }
 

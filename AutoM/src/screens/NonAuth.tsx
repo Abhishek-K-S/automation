@@ -48,13 +48,16 @@ const NonAuth = () => {
         console.log('payload is ', data.payload)
         if(typeof data.payload == 'string'){
             //save auth to local adn redux;
-            console.log('value is ', domain)
-            changeSavedDomain(domain, data.payload)
-            disp(changeDomain({domainName: domain, auth: data.payload}));
-            if(nav.getState()){
-                nav.popToTop();
-                nav.replace('Devices')
-            }
+            setDomain(prev=>{
+                console.log(prev)
+                changeSavedDomain(prev, data.payload)
+                disp(changeDomain({domainName: prev, auth: data.payload}));
+                if(nav.getState()){
+                    nav.popToTop();
+                    nav.replace('Devices')
+                }
+                return prev
+            })
         }
     }
 

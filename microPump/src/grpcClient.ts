@@ -18,17 +18,15 @@ class grpcClientLogic {
         this.grpcCall = grpcClient.streamData()
 
 
-        this.grpcCall.on('data', (chunk)=>{
+        this.grpcCall.on('data', (chunk: responseData)=>{
             //logic to handle
             console.log('grpc data received', chunk)
-            if(chunk.array){
-                try{
-                    let receivedData = JSON.parse(chunk.array.join('')) as WithoutAuth
-                    mqttserve.userMessageHandler(receivedData)
-                }
-                catch(err){
-                    console.log('Data sent from outbound server is not proper')
-                }
+            try{
+                let receivedData = JSON.parse(chunk.getRes()) as WithAuth;
+                mqttserve.userMessageHandler(receivedData)
+            }
+            catch(err){
+                console.log('Data sent from outbound server is not proper')
             }
         })
 
@@ -39,7 +37,7 @@ class grpcClientLogic {
         })
 
         this.grpcCall.on('error', ()=>{
-
+            console.log('got some error in grpc client')
         })
     }
 

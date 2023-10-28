@@ -24,17 +24,20 @@ const port = process.env.PORT;
 const io = new socketIOServer(httpServer, {cors: {origin: '*'}})
 
 io.on('connection', (socket)=>{
-    socket.use(socketReqestLimiter(5000))
+    socket.use(socketReqestLimiter(1200))
     
     console.log('user connected, ', socket.id)
 
     ///server user logic
     socket.on(socketEvents.relayMessageToServer, (skt: RemoteData) =>{
+        console.log('REMOTE: ',socket.id,' -----> SERVER : ', JSON.stringify(skt));
         if(!skt.domain) return;
         let sktId = db.getSocketIdFor(skt.domain)
+        socket.join(skt.domain)
         delete skt.domain
-        if(sktId)
+        if(sktId){
             socket.to(sktId).emit(socketEvents.relayMessageToServer, {...skt, senderId: socket.id})
+        }
     })
     
     
@@ -46,9 +49,11 @@ io.on('connection', (socket)=>{
     })
 
     socket.on(socketEvents.relayMessageToUser, (skt: RemoteData) =>{
+        console.log('REMOTE: ',' SERVER  -----> : ',socket.id, JSON.stringify(skt));
         let to = String(skt.senderId ? skt.senderId: skt.domain);
+        console.log("Sending message to ",to)
         skt.senderId && delete skt.senderId
-        socket.to(to).emit(socketEvents.relayMessageToUser, skt)
+        if(to) socket.to(to).emit(socketEvents.relayMessageToUser, skt)
     })
 
 

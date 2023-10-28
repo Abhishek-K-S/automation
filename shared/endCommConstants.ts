@@ -10,8 +10,7 @@ export const commActions = {
     startImmediate: 'IMMST',
     stopImmediate: 'IMMSP',
 
-    ping: 'P', 
-    pong: 'PG',
+    offline: 'OFF',
 
     errorAction: "ERR"
 
@@ -25,8 +24,8 @@ export type updatedStatus = {
     voltage: [number, number, number],
     manual?:boolean,
     time: number,
-    _id: string,
-    request: string,
+    _id?: string,
+    request?: string
 }
 
 export type startImmediate = null

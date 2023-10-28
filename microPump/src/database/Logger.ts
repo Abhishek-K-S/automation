@@ -15,6 +15,13 @@ export const updateLog = (_id: string, isError: boolean, message?: string|undefi
     logger.updateOne({_id}, toUpdate).catch(err=>console.log('Database update error', JSON.stringify(err)))
 }
 
-export const getLogs =async  (multiplier: number) =>{
-    return logger.find([{$sort: {updatedAt: -1}}, {$limit: (multiplier * logsToFetch)}]).skip((multiplier-1) * logsToFetch)
+export const getLogs =async  (page: number) =>{
+    return logger.paginate(
+        {},
+        {
+          sort: { updatedAt: -1 },
+          limit: logsToFetch, 
+          page // Specify the page number
+        }
+      );
 }

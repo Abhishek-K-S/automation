@@ -28,6 +28,10 @@ export const socketEndpoints = {
 
     getDeviceList: 'GDLIST',
     deviceList: 'DLIST',
+
+    //for iot alone
+    reconnect: 'RECON',
+    iotOffline: 'OFF'
 }
 
 export const errorTypes = {
@@ -48,7 +52,7 @@ export type WithoutAuth<T=any> = {
     senderId?: string, //sender socket id, exists
     endPoint: string,   //event endpoint
     service?: number, 
-    payload: T,   //data to send
+    payload?: T,   //data to send
     deviceSecurity?: string  //authcode for device
 }
 export type WithAuth<T=any> = {auth: string | {username: string, secret: string}} & WithoutAuth<T>

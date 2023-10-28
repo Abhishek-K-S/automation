@@ -39,7 +39,7 @@ class Auth{
     }
 
     isAuth(name:string, support: string){
-        let isValid = support === this.getStatement('support', name);
+        let isValid = support === (this.getStatement('support', name) as any)?.support;
         if(!isValid) throw Error('not valid credentials');
         return isValid;
     }

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate'
 
 const schema = new mongoose.Schema({
     requestId: {
@@ -12,6 +13,8 @@ const schema = new mongoose.Schema({
     outcome: String,
     isError: Boolean
 }, {timestamps: true})
+
+schema.plugin(mongoosePaginate);
 
 const logger = mongoose.model('Logger', schema);
 

@@ -10,7 +10,8 @@ export const setPumpMicroServiceListener = (fn: listenerType)=> clientListener =
 
 export const grpcRequestHandler = (grpcRequest: requestData) =>{
     let dataFromGrpcClient = JSON.parse(grpcRequest.getReq()) as WithoutAuth
-    localEmitter(dataFromGrpcClient.endPoint, dataFromGrpcClient.payload, MicroServices.PUMP, dataFromGrpcClient.senderId);
+    console.log("[FROM CHILD]: ", dataFromGrpcClient);
+    localEmitter(dataFromGrpcClient.endPoint, dataFromGrpcClient.payload, MicroServices.PUMP, dataFromGrpcClient.senderId, dataFromGrpcClient.device);
 }
 
 
@@ -18,13 +19,7 @@ export const sendResponseToPumpMicroService = (dataForPumpService: WithAuth) =>{
     let responseDataCopy = new responseData()
     let dataToSend : any = dataForPumpService
     delete dataToSend['service']
-    delete dataToSend['auth']
     delete dataToSend['domain']
     responseDataCopy.setRes(JSON.stringify(dataToSend))
     if(clientListener) clientListener(responseDataCopy)
 }
-
-setInterval(()=>{
-    console.log('LOGGER: clientListerner exists?: ', clientListener !== null);
-    if(clientListener) clientListener(new responseData().setRes('sending from parent'))
-}, 3000)
