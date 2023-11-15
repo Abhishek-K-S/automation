@@ -4,7 +4,7 @@ import { Colors, PredefinedStyles } from '../constants/style';
 import HeaderRight from '../components/HeaderRight';
 import NonAuth from '../screens/NonAuth';
 import PumpDeviceView from '../screens/PumpDeviceView';
-import DefaultDevicceView from '../screens/DefaultDevicceView';
+import DefaultDeviceView from '../screens/DefaultDeviceView';
 
 const AuthNavigator = () => {
   const Stack = createStackNavigator();
@@ -24,7 +24,7 @@ const AuthNavigator = () => {
         <Stack.Screen name='ChangeDomain' component={NonAuth}/>
         <Stack.Screen name='Devices' component={DeviceList}/>
         <Stack.Screen name='OperateDevice' component={PumpDeviceView}/>
-        <Stack.Screen name='DefaultDevice' component={DefaultDevicceView}/>
+        <Stack.Screen name='DefaultDevice' component={DefaultDeviceView}/>
     </Stack.Navigator>
   )
 }
