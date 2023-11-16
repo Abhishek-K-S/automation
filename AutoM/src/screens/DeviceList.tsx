@@ -68,7 +68,7 @@ const DeviceList = () => {
 
   const DrawItem = ({item}:{item: deviceListItem}) => (
     <TouchableOpacity style={style.deviceinfo} onPress={()=>handleClick(item.deviceId, item.type)}>
-      <Image style={style.icon} source={require('../../assets/icons_fan.png')}/>
+      <Image style={style.icon} source={item.type == 'PUMP'?require('../../assets/icons_fan.png'):require('../../assets/electricity.png')}/>
       <View>
         <Text style={style.devicetext}>{item.type}</Text>
         <CustomText>{item.deviceId}</CustomText>
