@@ -7,8 +7,8 @@ let client: null | Socket = null;
 let prevUrl: string = "";
 
 export const connectToSocket = (url: string, onConnect: ()=>void) => {
-    if(prevUrl == url){
-        client && onConnect();
+    if(prevUrl == url && client){
+        onConnect();
     }
     else{
         disconnectSocket();
@@ -17,7 +17,7 @@ export const connectToSocket = (url: string, onConnect: ()=>void) => {
             prevUrl = url;
             console.log('Connected to Socket.IO server', url);
             client && client.on(socketEvents.relayMessageToUser, (data: WithoutAuth)=>{
-                console.log('[message from server]: ', data)
+                console.log('[Message from Server]: ', data)
                 socketListener.emit(data.endPoint, data);
             })
             if (onConnect) {
@@ -30,6 +30,7 @@ export const connectToSocket = (url: string, onConnect: ()=>void) => {
 
 const disconnectSocket = () =>{
     client && client.disconnect()
+    prevUrl = "";
 }
 
 export const socketEmit = (data: WithAuth) =>{
