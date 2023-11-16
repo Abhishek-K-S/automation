@@ -23,7 +23,7 @@ const AuthNavigator = () => {
       }}}>
         <Stack.Screen name='ChangeDomain' component={NonAuth}/>
         <Stack.Screen name='Devices' component={DeviceList}/>
-        <Stack.Screen name='OperateDevice' component={PumpDeviceView}/>
+        <Stack.Screen name='PumpDevice' component={PumpDeviceView}/>
         <Stack.Screen name='DefaultDevice' component={DefaultDeviceView}/>
     </Stack.Navigator>
   )

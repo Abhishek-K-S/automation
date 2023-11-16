@@ -6,7 +6,7 @@ import CrazyHeading from '../components/CrazyHeading'
 import { FlatList } from 'react-native'
 import { Colors, PredefinedStyles } from '../constants/style'
 import { socketEmit } from '../utils/socket'
-import { MicroServices, WithAuth, WithoutAuth, socketEndpoints } from '../shared/constants'
+import { WithoutAuth, socketEndpoints } from '../shared/constants'
 import { useSelector } from 'react-redux'
 import { getAuthSelector } from '../utils/utils'
 import { useNavigation } from '@react-navigation/native'
@@ -15,31 +15,32 @@ import CustomButton from '../components/CustomButton'
 import { socketListener } from '../utils/socketEventListener'
 // import { getRequestObj } from '../utils/utils'
 
-type deviceList = {
-  [key: number]: string[]
-}
+type deviceListItem = {deviceId: string, type: string}
 
-type propType = StackNavigationProp<{OperateDevice: {device: string}}>
+type propType = StackNavigationProp<{
+  PumpDevice: {device: string}, 
+  DefaultDevice: {device: string}
+}>
 
 const DeviceList = () => {
-  const [devices, setDevices] = React.useState<deviceList>({0:[]});
+  console.log('loading the component\n')
+  // const [devices, setDevices] = React.useState<deviceListItem[]>([]);
+  const [devices, setDevices] = React.useState<deviceListItem[]>([{deviceId: 'helloooooooooooo', type: "pump"}]);
 
   const authSelector = useSelector(getAuthSelector)
 
   React.useEffect(()=>{
-    socketListener.addListener(socketEndpoints.deviceList, (data: WithoutAuth<string[]>)=>{
-      if(data.service !== undefined && Array.isArray(data.payload)){
-        let newList = {...devices};
-
-        console.log('getting new ilst', newList)
-        newList[data.service] = data.payload
-        setDevices(newList)
+    socketListener.addListener(socketEndpoints.deviceList, (data: WithoutAuth<deviceListItem[]>)=>{
+      console.log('got the list, ', data)
+      if(Array.isArray(data.payload)){
+        setDevices(data.payload);
       }
     })
 
     getList();
 
     return ()=>{
+      console.log('des')
       socketListener.removeAllListeners(socketEndpoints.deviceList);
     }
   }, [])
@@ -48,23 +49,30 @@ const DeviceList = () => {
     let request = {
       auth: authSelector.auth||'', 
       domain: authSelector.domain||'',
-      payload: null, 
       endPoint: socketEndpoints.getDeviceList,
-      service: MicroServices.PUMP
     }
     socketEmit(request)
   }
 
   const nav = useNavigation<propType>()
 
-  const handleClick = (device: string)=>{
-    nav.navigate('OperateDevice', {device})
+  const handleClick = (device: string, deviceType: string)=>{
+    console.log(device, deviceType);
+    switch(deviceType){
+      case "PUMP": 
+        nav.navigate('PumpDevice', {device})
+      break;
+      default: nav.navigate('DefaultDevice', {device})
+    }
   }
 
-  const DrawItem = ({item}:{item: string}) => (
-    <TouchableOpacity style={style.deviceinfo} onPress={()=>handleClick(item)}>
+  const DrawItem = ({item}:{item: deviceListItem}) => (
+    <TouchableOpacity style={style.deviceinfo} onPress={()=>handleClick(item.deviceId, item.type)}>
       <Image style={style.icon} source={require('../../assets/icons_fan.png')}/>
-      <Text style={style.devicetext}>{item}</Text>
+      <View>
+        <Text style={style.devicetext}>{item.type}</Text>
+        <CustomText>{item.deviceId}</CustomText>
+      </View>
     </TouchableOpacity>
 )
 
@@ -72,18 +80,18 @@ const DeviceList = () => {
     <View style={[PredefinedStyles.fullHeight, style.relative]}>
 
       <CustomView>
-        <CrazyHeading>Pump</CrazyHeading>
+        <CrazyHeading>My Devices</CrazyHeading>
         {
-          devices[0].length ?
+          devices.length ?
           <FlatList
-          data={devices[0]}
+          data={devices}
           renderItem={DrawItem}
           keyExtractor={(item, i)=>String(i)}
           /> : 
           <CustomText>No devices found</CustomText>
         }
       </CustomView>
-      <View style={style.bottom}><CustomButton text='Refresh' type='neutral'full handler={getList}/></View>
+      <View style={style.bottom}><CustomButton text='Refresh' type='neutral' full handler={getList}/></View>
     </View>
   )
 }
