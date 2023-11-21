@@ -39,34 +39,19 @@ export const errorTypes = {
 }
 
 export const ServerLimit = 5
-export const MicroServices = {
-    PUMP: 0
-}
+export const DeviceTypes = ['PUMP']
 
 //action: event type,         type: type of micro srver
 export type RemoteData = {domain?: string, senderId?: string}
 
 export type WithoutAuth<T=any> = {
-    device?: string, //exists
+    targetDevice?: string, //exists
     domain?: string, 
     senderId?: string, //sender socket id, exists
-    endPoint: string,   //event endpoint
-    service?: number, 
+    endPoint: string,   //event endpoint 
     payload?: T,   //data to send
     deviceSecurity?: string  //authcode for device
 }
 export type WithAuth<T=any> = {auth: string | {username: string, secret: string}} & WithoutAuth<T>
 
 export type WithError = {type: string, message: string, senderId: string};
-
-export const PropsWithoutAuth:string[] = [
-    'dest',
-    'action',
-    'type',
-    'data'
-];
-
-export const PropsWithAuth: string[] = [
-    ...PropsWithoutAuth,
-    'auth'
-]
