@@ -1,10 +1,8 @@
-import { EventEmitter } from "stream";
-import { sendResponseToPumpMicroService } from "./grpcHandler";
 import { generateToken, verifyToken } from "./jwt";
-import { errorTypes, MicroServices, socketEndpoints, socketEvents, WithAuth, WithoutAuth } from "./shared/constants";
+import { errorTypes, socketEndpoints, WithAuth, WithoutAuth } from "./shared/constants";
 import DB from './db/auth'
-
-const domainName = process.env.DOMAIN || 'QU'
+import { userMessageHandler } from "./Devices/DeviceHandler";
+import { sendDataToUser, localErrorEmitter, replyWith } from "./utils/socketEmitter";
 
 export const socketRequestHandler = (message: WithAuth) =>{
     switch(message.endPoint){
@@ -16,12 +14,12 @@ export const socketRequestHandler = (message: WithAuth) =>{
                 // check if user is auth, if so
                 console.log('is auth is ', DB.isAuth(message.auth.username, message.auth.secret))
                 let authForUser = generateToken(message.auth.username);
-                localEmitter(socketEndpoints.initSuccesss, authForUser, undefined, message.senderId )
+                sendDataToUser(socketEndpoints.initSuccesss, authForUser, {to: message.senderId} )
                 console.log('auto for user', authForUser)
             }
             catch(err){
                 console.log('encoutnerd some issue, ', err)
-                localErrorEmitter(errorTypes.authfail, "User not authorised, wrong credentials", message.senderId);
+                localErrorEmitter(errorTypes.authfail, "User not authorised, wrong credentials", {to:message.senderId});
             }
         break;
         default: 
@@ -33,32 +31,11 @@ export const socketRequestHandler = (message: WithAuth) =>{
                 if(!valid[0]) throw Error();
 
                 message.auth = valid[1];
-                switch(message.service){
-                    case MicroServices.PUMP: 
-                        sendResponseToPumpMicroService(message);
-                    break;
-                    default: console.log('error requesting, not a valid service', message.endPoint)
-                }
+
+                userMessageHandler(message);
 
             }catch(err){
-                localErrorEmitter(errorTypes.authfail, "User not authorised, login again", message.senderId)
+                localErrorEmitter(errorTypes.authfail, "User not authorised, login again", {to: message.senderId})
             }
     }
 }
-
-export const localEmitter = (endPoint: string, payload: any, service?: number, to?: string, device?: string) =>{
-    let dataToSend:WithoutAuth = {
-        endPoint,
-        payload,
-    }
-    if(service !== undefined || service !== null) dataToSend['service'] = service
-    if(to?.length) dataToSend['senderId'] = to; else dataToSend['domain'] = domainName;
-    if(device) dataToSend['device'] = device;
-    localSocketIOEmitter.emit(socketEvents.relayMessageToUser, dataToSend);
-}
-
-export const localErrorEmitter = (type: string, message: string, senderId?: string) => {
-    localSocketIOEmitter.emit(socketEvents.relayMessageToUser, {type, message, senderId})
-}
-
-export const localSocketIOEmitter = new EventEmitter()
