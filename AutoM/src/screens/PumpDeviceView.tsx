@@ -1,11 +1,10 @@
 import { View, Text, StyleSheet, FlatList } from 'react-native'
-import React, { PropsWithChildren, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import CustomText from '../components/CustomText'
 import { RouteProp, useIsFocused, useNavigation, useRoute } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { socketEmit } from '../utils/socket'
-import { MicroServices, WithAuth, WithoutAuth, socketEndpoints, socketEvents } from '../shared/constants'
-import { updatedStatus } from '../shared/endCommConstants'
+import { WithAuth, WithoutAuth, socketEndpoints } from '../shared/constants'
 import CustomView from '../components/CustomView'
 import CrazyHeading from '../components/CrazyHeading'
 import { Colors, PredefinedStyles } from '../constants/style'
@@ -13,84 +12,47 @@ import CustomButton from '../components/CustomButton'
 import { useSelector } from 'react-redux'
 import { getAuthSelector } from '../utils/utils'
 import { socketListener } from '../utils/socketEventListener'
-import { MaterialTopTabNavigationProp, createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import useSocketRequestGenerator from '../utils/SocketRequestGenerator'
+import useSocketListenToInfo from '../utils/SocketListenToInfo'
 
 type propType = StackNavigationProp<{Devices: undefined}>
 
-type TabNavigatorParams = {
-    StackScreen: { dev: string };
-};
-
-type TabChildProp = {
-    route: RouteProp<TabNavigatorParams, 'StackScreen'>;
-};
-
-
 const Control = () => {
     const device = useRoute<RouteProp<{params: {device: string}}>>().params?.device
-    // console.log('props are ', route)
-    // const device = route.params.dev
     const nav = useNavigation<propType>();
-    const deviceInitialState:updatedStatus = {
+
+    const socketRequestGenerator = useSocketRequestGenerator(device);
+    const [deviceStatus, lastUpdate] = useSocketListenToInfo(device, {
         runningState: false,
         phase: 0,
         voltage: [0, 0, 0],
         time: 0,
-        _id: device
-    }
-    const authObject = useSelector(getAuthSelector)
-    
-    
-    const [deviceStatus, setDeviceStatus] = React.useState<updatedStatus>(deviceInitialState)
-    const [lastUpdate, setLastUpdate] = React.useState<string>('N/A');
+        _id: device, 
+        manual: false
+    })
 
     React.useEffect(()=>{
         if(typeof device !== 'string'){
             nav.navigate('Devices')
         }
         else{
-            socketListener.addListener(socketEndpoints.info, (data:WithoutAuth<updatedStatus>)=>{
-                console.log('got payload at pump view', data?.payload, typeof data.payload=='string', data.device)
-                if(data?.payload && data.device == device){
-                    console.log("all matching");
-                    setDeviceStatus(data.payload)
-                    let upDate = new Date(data.payload.time);
-                    setLastUpdate(`${upDate.toLocaleTimeString()}`)
-                }
-                    
-            })
             socketGetInfo();
-
-            return ()=>{
-                console.log('destructuring');
-                socketListener.removeAllListeners(socketEndpoints.info);
-            }
         }
     }, [])
 
-    const getRequestObj = (endPoint: string):WithAuth => {
-        return {
-            auth: authObject.auth || '',
-            domain: authObject.domain || '',
-            endPoint,
-            service: MicroServices.PUMP,
-            device
-        }
-    }
-
     const socketGetInfo = () =>{
-        socketEmit(getRequestObj(socketEndpoints.getInfo))
+        socketEmit(socketRequestGenerator(socketEndpoints.getInfo))
     }
 
     const socketStartImmediate  = () =>{
         if( !deviceStatus.runningState)
-            socketEmit(getRequestObj(socketEndpoints.startImmediate));
+            socketEmit(socketRequestGenerator(socketEndpoints.startImmediate));
     }
 
     const socketStopImmediate = () =>{
         if(deviceStatus.runningState)
-            socketEmit(getRequestObj(socketEndpoints.stopImmediate))
+            socketEmit(socketRequestGenerator(socketEndpoints.stopImmediate))
     }
 
   return (
@@ -221,8 +183,7 @@ function Logs() {
             auth: authObject.auth || '',
             domain: authObject.domain || '',
             endPoint,
-            service: MicroServices.PUMP,
-            device
+            targetDevice: device
         }
     }
 
@@ -276,7 +237,5 @@ function PumpDeviceView() {
         </Tab.Navigator>
     );
 }
-
-
 
 export default PumpDeviceView
