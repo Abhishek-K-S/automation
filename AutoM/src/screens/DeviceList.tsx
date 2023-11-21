@@ -25,7 +25,7 @@ type propType = StackNavigationProp<{
 const DeviceList = () => {
   console.log('loading the component\n')
   // const [devices, setDevices] = React.useState<deviceListItem[]>([]);
-  const [devices, setDevices] = React.useState<deviceListItem[]>([{deviceId: 'helloooooooooooo', type: "pump"}]);
+  const [devices, setDevices] = React.useState<deviceListItem[]>([]);
 
   const authSelector = useSelector(getAuthSelector)
 

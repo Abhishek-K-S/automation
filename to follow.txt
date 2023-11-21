@@ -21,3 +21,9 @@ iot:;;;;;
 expect 
     support:
     _id: 
+
+
+
+.. in server, on creating new logs, send it to the domain, so that, devices that has already sigend can receive new logs.
+
+if auth doesn't exists, make it logout

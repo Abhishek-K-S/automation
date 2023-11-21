@@ -127,6 +127,7 @@ const style = StyleSheet.create({
     },
     scrollable: {
         overflow: 'scroll',
+        height: '85%'
     },
     flatlistItemDummy:{
         height: 120
@@ -140,7 +141,7 @@ type LogsPayload = {
     isError: boolean,
     outcome: string,
     time: string
-}[]
+}
 
 function Logs() {
     const focus = useIsFocused();
@@ -148,8 +149,9 @@ function Logs() {
 
     const authObject = useSelector(getAuthSelector)
 
-    const [logData, setLogData] = React.useState<LogsPayload>([])
+    const [logData, setLogData] = React.useState<LogsPayload[]>([])
     const [pageno, setPageno] = React.useState<number>(1)
+    const requestGenerator = useSocketRequestGenerator(device)
 
     useEffect(()=>{
         if(focus && logData.length == 0){
@@ -158,17 +160,22 @@ function Logs() {
     }, [focus])
 
     useEffect(()=>{
-        socketListener.addListener(socketEndpoints.receiveLogs, function (data: WithoutAuth<LogsPayload>){
-            if(data.payload?.length){
+        socketListener.addListener(socketEndpoints.receiveLogs, function (data: WithoutAuth<LogsPayload|LogsPayload[]>){
+            if(Array.isArray(data.payload)){
                 console.log('new payload received', data.payload)
                 let newLogs = data.payload.map(entry=>{
                     return {
                         ...entry,
-                        time: new Date(entry.time).toLocaleString('en-in')
+                        time: formatTime(entry.time)
                     }
                 })
                 setPageno(pn=>pn+1)
                 setLogData(pre=>[...pre, ...newLogs])
+            }
+            else if(data.payload){
+                let newLog = data.payload
+                newLog.time = formatTime(newLog.time)
+                setLogData(pre=>[ newLog, ...pre])
             }
         })
         return ()=>{
@@ -176,21 +183,13 @@ function Logs() {
         }
     },[])
 
-    
-
-    const getRequestObj = (endPoint: string):WithAuth => {
-        return {
-            auth: authObject.auth || '',
-            domain: authObject.domain || '',
-            endPoint,
-            targetDevice: device
-        }
+    function formatTime(time: string|number){
+        return new Date(time).toLocaleString('en-in');
     }
 
     function loadLogs(){
-        let req = getRequestObj(socketEndpoints.getLogs)
+        let req = requestGenerator(socketEndpoints.getLogs) as any
         req.payload = {offset: pageno}
-        
 
         socketEmit(req);
     }
@@ -210,12 +209,8 @@ function Logs() {
                             <Text style={item.item.isError?style.errorText: style.normalText}>{item.item.outcome}</Text>
                         </View>)}
                     />
-                    <CustomButton text='Load more if available' type='neutral' handler={loadLogs} full />
-                    <View key="dummy" style={style.flatlistItemDummy}>
-                        <CustomText></CustomText>
-                        <Text ></Text>
-                    </View>
                 </View>
+                <CustomButton text='Load more if available' type='neutral' handler={loadLogs} full />
             </CustomView>
         </View>
     );

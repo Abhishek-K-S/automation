@@ -10,6 +10,8 @@ export const socketReqestLimiter = (ms: number) =>{
         if(!lastRequestTime || (now - lastRequestTime) >= ms){
             eventMap.set(socket[0], now);
             next()
+            return;
         }
+        next(new Error(`Speed limit is: ${ms} sec`))
     }
 }

@@ -15,6 +15,10 @@ socket.on('connect', ()=>{
     socket.emit(socketEvents.register, {domain: domainName})
 })
 
+socket.on('disconnect', (reason, desc)=>{
+    console.log('reson, desc, ', reason, desc)
+})
+
 socket.on(socketEvents.relayMessageToServer, socketRequestHandler)
 socket.on(socketEvents.registerSuccess, (status)=>console.log('register status success: ', status))
 

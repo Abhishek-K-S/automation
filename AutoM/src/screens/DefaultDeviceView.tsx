@@ -1,13 +1,14 @@
-import { View, Text } from 'react-native'
-import React, { PropsWithChildren } from 'react'
+import React from 'react'
 import useSocketRequestGenerator from '../utils/SocketRequestGenerator'
 import useSocketListenToInfo from '../utils/SocketListenToInfo';
 import { socketEmit } from '../utils/socket';
 import { socketEndpoints } from '../shared/constants';
 import CustomView from '../components/CustomView';
 import CustomText from '../components/CustomText';
+import { RouteProp, useRoute } from '@react-navigation/native';
 
-const DefaultDeviceView = ({device}: PropsWithChildren<{device: string}>) => {
+const DefaultDeviceView = () => {
+  const device = useRoute<RouteProp<{params: {device: string}}>>().params?.device
   const socketRequestGenerator = useSocketRequestGenerator(device);
   const [socketInfo, lastUpdate] = useSocketListenToInfo<any>(device, {time: 0})
 

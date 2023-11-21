@@ -10,7 +10,6 @@ int len = 0;
 
 char eventUpdateStatus[40];
 char eventErrAction[40];
-char eventOffline[40];
 
 //mqtt subscribe actions
 char eventGetDeviceStat[40];
@@ -185,7 +184,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   if(strcmp(topic, reconnect) == 0){
     //device needs to reconnect to the server
-    mqttClient.publish(registerDevice, deviceId);
+    mqttClient.publish(registerDevice, String(String(deviceId)+",PUMP").c_str());
   }
   else if( strlen(topic)>len ){
     if(strcmp(topic, eventRegisterConfirm) == 0){
@@ -251,19 +250,19 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void connectToWifi(){
   WiFi.begin(wifiSsid, wifiPasswd);
-  while (true) { 
-    if(WiFi.status() == WL_CONNECTED){
-        Serial.println("[WiFi] WiFi is connected!");
-        Serial.print("[WiFi] IP address: ");
-        Serial.println(WiFi.localIP());
-        break;
-    }
-    else{
-        Serial.print("[WiFi] WiFi Status: ");
-        Serial.println(WiFi.status());
-    }
-    delay(500);
+  while (true) {
+  if(WiFi.status() == WL_CONNECTED){
+      Serial.println("[WiFi] WiFi is connected!");
+      Serial.print("[WiFi] IP address: ");
+      Serial.println(WiFi.localIP());
+break;
   }
+  else{
+      Serial.print("[WiFi] WiFi Status: ");
+      Serial.println(WiFi.status());
+  }
+  delay(500);
+}
 }
 
 void createKeys(){
@@ -275,9 +274,6 @@ void createKeys(){
 
   strncpy(eventErrAction, baseString, len);
   strcat(eventErrAction, errAction);
-  
-  strncpy(eventOffline, baseString, len);
-  strcat(eventOffline, offline);
 
   strncpy(eventGetDeviceStat, baseString, len);
   strcat(eventGetDeviceStat, getDeviceStat);
@@ -292,14 +288,13 @@ void createKeys(){
   strcat(eventRegisterConfirm, registerConfirm);
 
   Serial.println("deivce will topic");
-  Serial.print(eventOffline);
   Serial.println();
 }
 
 void mqttSubscribe(){
   mqttClient.subscribe(eventRegisterConfirm);
   mqttClient.subscribe(reconnect);
-  mqttClient.publish(registerDevice, deviceId);
+  mqttClient.publish(registerDevice, String(String(deviceId)+",PUMP").c_str());
 }
 
 void connectToMqtt(){
@@ -309,7 +304,7 @@ void connectToMqtt(){
     mqttClient.setKeepAlive(6);
   
     // Connect to MQTT broker
-    if (mqttClient.connect(deviceId, eventOffline, 0, false, "{}")) {
+    if (mqttClient.connect(deviceId, offline, 0, false, String(String(deviceId)+",auth").c_str())) {
       Serial.println("Connected to MQTT broker");
       
       mqttSubscribe();
@@ -334,8 +329,8 @@ void setup() {
 
 void loop() {
   if(WiFi.status() != WL_CONNECTED){
-    connectToWifi();
-  }
+          connectToWifi();
+      }
   if (!mqttClient.connected()) {
     connectToMqtt();
   }
