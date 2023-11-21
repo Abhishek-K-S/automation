@@ -11,7 +11,7 @@ import { changeDomain } from '../store/domainReducer'
 import { RemoteServer, changeSavedDomain } from '../storage/storage'
 import { useNavigation } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
-import { WithoutAuth, socketEndpoints, socketEvents } from '../shared/constants'
+import { WithoutAuth, socketEndpoints } from '../shared/constants'
 import { connectToSocket, socketEmit} from '../utils/socket'
 import Loader from '../components/Loader'
 import { socketListener } from '../utils/socketEventListener'
@@ -99,7 +99,7 @@ const NonAuth = () => {
             </CustomView>
             <CustomView>
                 <CustomText>secret phrase :</CustomText>
-                <TextInput style={style.textInput} onChangeText={setSecret} value={secret} placeholder='secret phrase'/>
+                <TextInput style={style.textInput} onChangeText={setSecret} value={secret} placeholder='Secret phrase'/>
             </CustomView>
             <CustomView>
                 <Text style={{color: Colors.danger}}>(i) All fields are case sensitive</Text>
