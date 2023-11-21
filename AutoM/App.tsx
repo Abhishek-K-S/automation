@@ -5,9 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 import { Provider, useDispatch } from 'react-redux';
 import Store from './src/store/store';
 import React from 'react';
-import { client } from './src/utils/socket';
+require('./src/utils/socketEventListener')
 
 export default function App() {
+
   return (
       <>
         <StatusBar style='light' translucent={false}/>
