@@ -20,6 +20,9 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "socket.io-client": "^4.7.2",
+    "mqtt": "^5.0.2",
+    "mongoose": "^7.5.1",
+    "mongoose-paginate": "^5.0.3",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -29,6 +32,7 @@
     "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "^20.4.6",
     "@types/uuid": "^9.0.3",
+    "@types/mongoose-paginate": "^5.0.12",
     "concurrently": "^8.2.0",
     "nodemon": "^3.0.1",
     "typescript": "^5.1.6"
