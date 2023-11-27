@@ -8,19 +8,20 @@ import { socketRequestHandler } from './src/socketRequestHandler';
 const serverURL = process.env.SERVER_URL || ''
 const domainName = process.env.DOMAIN || 'QU'
 
-const socket = io(serverURL)
+const socket = io(serverURL, {autoConnect: true, reconnection: true})
 
 socket.on('connect', ()=>{
     console.log('connected to the server');
     socket.emit(socketEvents.register, {domain: domainName})
+    
+    socket.on('disconnect', (reason, desc)=>{
+        console.log('reson, desc, ', reason, desc)
+    })
+    
+    socket.on(socketEvents.relayMessageToServer, socketRequestHandler)
+    socket.on(socketEvents.registerSuccess, (status)=>console.log('register status success: ', status))
 })
 
-socket.on('disconnect', (reason, desc)=>{
-    console.log('reson, desc, ', reason, desc)
-})
-
-socket.on(socketEvents.relayMessageToServer, socketRequestHandler)
-socket.on(socketEvents.registerSuccess, (status)=>console.log('register status success: ', status))
 
 function replyToUser(msg: any): void{
     console.log('message to send ', msg)
@@ -33,7 +34,7 @@ function replyToUser(msg: any): void{
 // grpcServer.addService(pumpDataTransferService, grpcDataTransferHandlers)
 
 import connect from './src/database/connect';
-import { sendToUser } from './src/utils/socketEmitter';
+import { localMessageEmitter } from './src/utils/socketEmitter';
 connect();
 const DeviceHelper = require('./src/Devices/DeviceHandler');
 
@@ -41,7 +42,7 @@ console.log('type of ', typeof DeviceHelper.deviceOffline)
 require('./src/mqtt/mqttServer');
 
 
-sendToUser.on(socketEvents.relayMessageToUser, replyToUser);
+localMessageEmitter.on(socketEvents.relayMessageToUser, replyToUser);
 
 
 
