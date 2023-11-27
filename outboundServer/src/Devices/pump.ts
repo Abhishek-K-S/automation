@@ -2,9 +2,9 @@ import { Logger, getLogWithId, getLogs, updateLog } from "../database/Logger";
 import { mqttMessageSend } from "../mqtt/mqttServer";
 import { WithAuth, socketEndpoints } from "../shared/constants";
 import { commActions, errorAction } from "../shared/endCommConstants";
-import { sendDataToUser, sendToUser } from "../utils/socketEmitter";
+import { sendDataToUser } from "../utils/socketEmitter";
 
-export const handleUserRequest =async (userRequest: WithAuth) => {
+const handleUserRequest =async (userRequest: WithAuth) => {
     console.log('received usr message')
     try{
         switch(userRequest.endPoint){
@@ -63,7 +63,7 @@ export const handleUserRequest =async (userRequest: WithAuth) => {
     }
 }
 
-export async function handleDeviceResponse(topic:string, payload: Buffer){
+async function handleDeviceResponse(topic:string, payload: Buffer){
         try{
             const message = JSON.parse(String(payload.toString())) as  any
             const fragments = topic.split('/');
@@ -105,3 +105,5 @@ export async function handleDeviceResponse(topic:string, payload: Buffer){
             console.log('Improper message format')
         }
 }
+
+export default {handleUserRequest, handleDeviceResponse}
