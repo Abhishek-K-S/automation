@@ -29,6 +29,10 @@ export const socketEndpoints = {
     getDeviceList: 'GDLIST',
     deviceList: 'DLIST',
 
+    setSchedule: 'SSCH',
+    removeSchedule: 'RSCH',
+    getSchedules: 'GSCH',
+
     //for iot alone
     reconnect: 'RECON',
     iotOffline: 'OFF'
@@ -55,3 +59,21 @@ export type WithoutAuth<T=any> = {
 export type WithAuth<T=any> = {auth: string | {username: string, secret: string}} & WithoutAuth<T>
 
 export type WithError = {type: string, message: string, senderId: string};
+
+export const ScheduleAllowedList = [DeviceTypes[0]]
+
+export type schedulerAction = {triggerAt: Date,actionName: string}
+export type Schedule = {
+    groupId: string,
+    targetDevice: string,
+    action:schedulerAction,
+    retry: boolean,
+    createdBy: string
+}
+
+export type ScheduleTypeFromDevice = {
+    targetDevice: string,
+    actions: schedulerAction[],
+    retry: boolean,
+    createdByj: string
+}
