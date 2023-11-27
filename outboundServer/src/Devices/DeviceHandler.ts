@@ -1,28 +1,47 @@
 import { mqttSubscribe, mqttMessageSend, mqttUnsubscribe } from "../mqtt/mqttServer";
-import { DeviceTypes, WithAuth, socketEndpoints } from "../shared/constants";
+import { DeviceTypes, WithAuth, socketEndpoints, socketEvents } from "../shared/constants";
 import { commActions } from "../shared/endCommConstants";
 import { mqttOn } from "../utils/mqttEmitter";
-import { sendDataToUser } from "../utils/socketEmitter";
-import { handleDeviceResponse, handleUserRequest } from "./pump";
+import { localMessageEmitter, sendDataToUser } from "../utils/socketEmitter";
+import PUMP from "./pump";
+
+
 
 let deviceList = new Map<string, string>();
 
+const performDeviceSpecificActions = (message: WithAuth) => {
+    if(typeof message.targetDevice == 'string'){
+        if(!deviceList.has(message.targetDevice)) return;
+        let operationDeviceType = deviceList.get(message.targetDevice);
+                
+        switch(operationDeviceType){
+            //pump type
+            case DeviceTypes[0]:
+                PUMP.handleUserRequest(message);
+            break;
+            default: throw Error("Unkown device type");
+        }
+    }
+}
+
 export const userMessageHandler = (message: WithAuth) =>{
     try{
-        if(!message.senderId) throw new Error('no sender id');
         if(message.endPoint === socketEndpoints.getDeviceList){
+            if(!message?.senderId) throw new Error('no sender id');
             sendDevicelistToUser(message.senderId);
             return;
         }
         if(!message.targetDevice || !deviceList.has(message.targetDevice)) return false;
-        let operationDeviceType = deviceList.get(message.targetDevice);
-    
-        switch(operationDeviceType){
-            //pump type
-            case DeviceTypes[0]:
-                handleUserRequest(message);
+
+        switch(message.endPoint){
+            case socketEndpoints.setSchedule: 
             break;
-            default: throw Error("Unkown device type");
+            case socketEndpoints.getSchedules:
+            break;
+            case socketEndpoints.removeSchedule:
+            break;
+            default:
+                performDeviceSpecificActions(message);
         }
     }
     catch(e){
@@ -31,6 +50,7 @@ export const userMessageHandler = (message: WithAuth) =>{
 }
 
 mqttOn(deviceMessageHandler);
+localMessageEmitter.on(socketEvents.relayMessageToServer, performDeviceSpecificActions)
 
 function deviceMessageHandler(topic:string, payload:Buffer){
     console.log('message reveived at the server' , topic, payload.toString());
@@ -68,7 +88,7 @@ function deviceMessageHandler(topic:string, payload:Buffer){
     switch(operationType){
         case DeviceTypes[0]:
             //pump type
-            handleDeviceResponse(topic, payload);
+            PUMP.handleDeviceResponse(topic, payload);
         break;
     }
 }
