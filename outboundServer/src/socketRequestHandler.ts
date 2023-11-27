@@ -2,7 +2,7 @@ import { generateToken, verifyToken } from "./jwt";
 import { errorTypes, socketEndpoints, WithAuth, WithoutAuth } from "./shared/constants";
 import DB from './db/auth'
 import { userMessageHandler } from "./Devices/DeviceHandler";
-import { sendDataToUser, localErrorEmitter, replyWith } from "./utils/socketEmitter";
+import { sendDataToUser, sendErrorToUser } from "./utils/socketEmitter";
 
 export const socketRequestHandler = (message: WithAuth) =>{
     switch(message.endPoint){
@@ -19,7 +19,7 @@ export const socketRequestHandler = (message: WithAuth) =>{
             }
             catch(err){
                 console.log('encoutnerd some issue, ', err)
-                localErrorEmitter(errorTypes.authfail, "User not authorised, wrong credentials", {to:message.senderId});
+                sendErrorToUser(errorTypes.authfail, "User not authorised, wrong credentials", {to:message.senderId});
             }
         break;
         default: 
@@ -35,7 +35,7 @@ export const socketRequestHandler = (message: WithAuth) =>{
                 userMessageHandler(message);
 
             }catch(err){
-                localErrorEmitter(errorTypes.authfail, "User not authorised, login again", {to: message.senderId})
+                sendErrorToUser(errorTypes.authfail, "User not authorised, login again", {to: message.senderId})
             }
     }
 }
