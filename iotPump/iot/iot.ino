@@ -319,6 +319,7 @@ void connectToMqtt(){
 
 void setup() {
   Serial.begin(9600);
+//  WiFi.setAutoReconnect(false);
   connectToWifi();
 
   createKeys();
